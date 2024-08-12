@@ -27,11 +27,21 @@
         let config = null;
         let DS18B20 = 0;
         let chart;
+        let lastTimestamp = Date.now();
 
         // Configuration callback
         eraWidget.onConfiguration((configuration) => {
             config = configuration.realtime_configs[0];
         });
+
+        // Custom timeRanger function to generate a timestamp every minute
+        function timeRanger() {
+            const now = Date.now();
+            if (now - lastTimestamp >= 60000) { // 60000 ms = 1 minute
+                lastTimestamp = now;
+            }
+            return lastTimestamp;
+        }
 
         // Values callback to update chart and checkbox
         eraWidget.onValues((values) => {
@@ -39,9 +49,9 @@
             DS18B20 = values[config.id].value;
             input.checked = DS18B20 > 0;
 
-            // Update the chart with new data
+            // Update the chart with new data using timeRanger
             if (chart) {
-                const x = (new Date()).getTime(); // current time
+                const x = timeRanger(); // Use custom timeRanger function
                 const y = DS18B20;
                 chart.series[0].addPoint([x, y], true, true);
             }
